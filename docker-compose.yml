@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  api_service:
+    build: ./api_service
+    container_name: api_service
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  order_service:
+    build: ./order_service
+    container_name: order_service
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  websocket_service:
+    build: ./websocket_service
+    container_name: websocket_service
+    ports:
+      - "6000:6000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+
+  ai_service:
+    build: ./ai_service
+    container_name: ai_service
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
